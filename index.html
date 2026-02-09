@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero's Journey - Sistema de Produtividade</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Cabeçalho -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title"><i class="fas fa-crown"></i> Hero's Journey</h1>
+                <div class="header-stats">
+                    <div class="stats-item">
+                        <span class="stats-icon"><i class="fas fa-coins"></i></span>
+                        <span id="coin-count">100</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-icon"><i class="fas fa-fire"></i></span>
+                        <span id="streak-count">0</span>
+                    </div>
+                    <div class="stats-item">
+                        <span class="stats-icon"><i class="fas fa-heart"></i></span>
+                        <span id="life-count">5</span>
+                    </div>
+                    <div class="stats-item shield-status" id="shield-status">
+                        <span class="stats-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="shield-text">Sem escudo</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navegação principal -->
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li class="nav-item active" data-tab="perfil" data-mobile="primary">
+                    <i class="fas fa-user"></i>
+                    <span>Perfil</span>
+                </li>
+                <li class="nav-item" data-tab="missoes" data-mobile="primary">
+                    <i class="fas fa-flag-checkered"></i>
+                    <span>Missões</span>
+                </li>
+                <li class="nav-item" data-tab="preparacao" data-mobile="primary">
+                    <i class="fas fa-dumbbell"></i>
+                    <span>Preparação</span>
+                </li>
+                <li class="nav-item" data-tab="calendarios" data-mobile="primary">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Calendários</span>
+                </li>
+                <li class="nav-item" data-tab="gestao" data-mobile="primary">
+                    <i class="fas fa-wallet"></i>
+                    <span>Gestão</span>
+                </li>
+                <li class="nav-item" data-tab="chefoes" data-mobile="extra">
+                    <i class="fas fa-dragon"></i>
+                    <span>Chefões</span>
+                </li>
+                <li class="nav-item" data-tab="estatisticas" data-mobile="extra">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Estatísticas</span>
+                </li>
+                <li class="nav-item" data-tab="diario" data-mobile="extra">
+                    <i class="fas fa-book"></i>
+                    <span>Diário</span>
+                </li>
+                <li class="nav-item nav-more" id="nav-more-toggle">
+                    <i class="fas fa-ellipsis-h"></i>
+                    <span>Mais</span>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="mobile-more-menu" id="mobile-more-menu">
+            <button class="mobile-more-item" data-tab="chefoes">
+                <i class="fas fa-dragon"></i> Chefões
+            </button>
+            <button class="mobile-more-item" data-tab="estatisticas">
+                <i class="fas fa-chart-bar"></i> Estatísticas
+            </button>
+            <button class="mobile-more-item" data-tab="diario">
+                <i class="fas fa-book"></i> Diário
+            </button>
+        </div>
+
+        <!-- Conteúdo principal -->
+        <main class="main-content">
+            <!-- Aba Perfil - Seção de informações do herói -->
+            <section id="perfil" class="tab-content active">
+                <div class="profile-header">
+                    <div class="profile-pic-container">
+                        <img src="perfil.png" alt="Perfil" class="profile-pic">
+                        <button class="edit-profile-btn"><i class="fas fa-camera"></i></button>
+                    </div>
+                    <div class="profile-info">
+                        <h2 class="hero-name">Ryan Pascoal</h2>
+                        
+                        <!-- Vidas integradas aqui -->
+                        <div class="lives-integrated">
+                            <span class="lives-label"><i class="fas fa-heart"></i> Vidas:</span>
+                            <div class="hearts-integrated" id="hearts-container">
+                                <!-- Vidas serão adicionadas via JavaScript -->
+                            </div>
+                            <span class="lives-count" id="lives-count-text">4/4</span>
+                        </div>
+                        
+                        <!-- Nível e XP Geral com barra -->
+                        <div class="level-xp-integrated">
+                            <div class="level-xp-header">
+                                <span class="level-label">Nível <span id="level">1</span></span>
+                                <span class="xp-text"><span id="current-xp">30</span>/<span id="max-xp">100</span> XP</span>
+                            </div>
+                            <div class="xp-bar-integrated">
+                                <div class="xp-fill-integrated" id="xp-fill" style="width: 30%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Streaks -->
+                <div class="streaks-container">
+                    <h3><i class="fas fa-fire"></i> Streaks</h3>
+                    <div class="streaks-grid">
+                        <div class="streak-card">
+                            <div class="streak-header">
+                                <i class="fas fa-fire streak-icon general"></i>
+                                <span class="streak-title">Geral</span>
+                            </div>
+                            <div class="streak-count" id="streak-general">0 dias</div>
+                            <div class="streak-record" id="streak-general-record">Recorde: 0 dias</div>
+                            <div class="streak-desc">Reseta se qualquer atividade falhar</div>
+                        </div>
+                        <div class="streak-card">
+                            <div class="streak-header">
+                                <i class="fas fa-dumbbell streak-icon physical"></i>
+                                <span class="streak-title">Físico</span>
+                            </div>
+                            <div class="streak-count" id="streak-physical">0 dias</div>
+                            <div class="streak-record" id="streak-physical-record">Recorde: 0 dias</div>
+                            <div class="streak-desc">Reseta se treino falhar</div>
+                        </div>
+                        <div class="streak-card">
+                            <div class="streak-header">
+                                <i class="fas fa-brain streak-icon mental"></i>
+                                <span class="streak-title">Mental</span>
+                            </div>
+                            <div class="streak-count" id="streak-mental">0 dias</div>
+                            <div class="streak-record" id="streak-mental-record">Recorde: 0 dias</div>
+                            <div class="streak-desc">Reseta se estudo falhar</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Abas secundárias -->
+                <div class="profile-tabs">
+                    <div class="sub-nav">
+                        <button class="sub-nav-btn active" data-subtab="atributos">Atributos</button>
+                        <button class="sub-nav-btn" data-subtab="treinos">Treinos</button>
+                        <button class="sub-nav-btn" data-subtab="estudos">Estudos</button>
+                        <button class="sub-nav-btn" data-subtab="classes">Classes</button>
+                    </div>
+                    
+                    <div class="sub-content">
+                        <!-- Atributos (mantido como está) -->
+                        <div id="atributos" class="sub-tab active">
+                            <div class="attributes-grid" id="attributes-container">
+                                <!-- Atributos serão adicionados via JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Treinos - Visualização apenas -->
+                        <div id="treinos" class="sub-tab">
+                            <div class="workouts-display">
+                                <h3>Meus Treinos</h3>
+                                <div class="workouts-grid" id="workouts-display">
+                                    <!-- Treinos serão adicionados via JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Estudos - Visualização apenas -->
+                        <div id="estudos" class="sub-tab">
+                            <div class="studies-display">
+                                <h3>Meus Estudos</h3>
+                                <div class="studies-grid" id="studies-display">
+                                    <!-- Estudos serão adicionados via JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="classes" class="sub-tab">
+                            <div class="form-container">
+                                <h3>Cadastrar Nova Classe</h3>
+                                <form id="class-form">
+                                    <div class="form-group">
+                                        <label for="class-name">Nome da Classe</label>
+                                        <input type="text" id="class-name" placeholder="Ex: Coordenador Administrativo" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="class-emoji">Emoji (opcional)</label>
+                                        <input type="text" id="class-emoji" placeholder="ðŸ’¼">
+                                    </div>
+                                    
+                                    <button type="submit" class="submit-btn">Cadastrar Classe</button>
+                                </form>
+                            </div>
+                            
+                            <div class="existing-items">
+                                <h3>Classes Cadastradas</h3>
+                                <div class="items-list" id="classes-list">
+                                    <!-- Lista de classes cadastradas -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loja e Inventário -->
+                <div class="shop-inventory">
+                    <div class="sub-nav">
+                        <button class="sub-nav-btn active" data-subtab="loja">Loja</button>
+                        <button class="sub-nav-btn" data-subtab="inventario">Inventário</button>
+                        <button class="sub-nav-btn" data-subtab="gerenciar-loja">Gerenciar Loja</button>
+                    </div>
+                    
+                    <div class="sub-content">
+                        <!-- Loja -->
+                        <div id="loja" class="sub-tab active">
+                            <div class="items-grid" id="shop-items">
+                                <!-- Itens da loja serão adicionados via JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Inventário -->
+                        <div id="inventario" class="sub-tab">
+                            <div class="inventory-grid" id="inventory-items">
+                                <!-- Itens do inventário serão adicionados via JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Gerenciar Loja -->
+                        <div id="gerenciar-loja" class="sub-tab">
+                            <div class="form-container">
+                                <h3>Cadastrar Novo Item</h3>
+                                <form id="shop-item-form">
+                                    <div class="form-group">
+                                        <label for="item-name">Nome do Item</label>
+                                        <input type="text" id="item-name" placeholder="Ex: Espada Lendária" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="item-emoji">Emoji (opcional)</label>
+                                        <input type="text" id="item-emoji" placeholder="⚔️">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="item-price">Preço (moedas)</label>
+                                        <input type="number" id="item-price" min="1" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="item-level">Nível Mínimo</label>
+                                        <input type="number" id="item-level" min="0" value="0">
+                                    </div>
+                                    
+                                    <button type="submit" class="submit-btn">Cadastrar Item</button>
+                                </form>
+                            </div>
+                            
+                            <div class="existing-items">
+                                <h3>Itens Cadastrados</h3>
+                                <div class="items-list" id="shop-items-list">
+                                    <!-- Itens da loja para gerenciamento -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Adicione esta seção ANTES da seção de Configurações na aba Perfil -->
+                <div class="hero-logs-section">
+                    <h3><i class="fas fa-scroll"></i> Logs do Herói</h3>
+                    <div class="logs-container" id="hero-logs">
+                        <!-- Logs serão adicionados via JavaScript -->
+                    </div>
+                </div>
+                <br>
+                <!-- Configurações (mantido) -->
+                <div class="settings-section">
+                    <h3><i class="fas fa-cog"></i> Configurações</h3>
+                    <br>
+                    <div class="settings-options">
+                        <button class="settings-btn" id="reset-btn"><i class="fas fa-redo"></i> Resetar Progresso</button>
+                        <button class="settings-btn" id="export-btn"><i class="fas fa-download"></i> Exportar Dados</button>
+                        <button class="settings-btn" id="import-btn"><i class="fas fa-upload"></i> Importar Dados</button>
+                        <button class="settings-btn" id="backup-btn"><i class="fab fa-google-drive"></i> Backup no Google Drive</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Aba Missões -->
+            <section id="missoes" class="tab-content">
+                <div class="page-header">
+                    <h2><i class="fas fa-flag-checkered"></i> Missões</h2>
+                    <div class="time-display" id="mission-time">Hoje: <span id="current-date"></span></div>
+                </div>
+                
+                <div class="sub-nav">
+                    <button class="sub-nav-btn active" data-subtab="missoes-dia">Missões do Dia</button>
+                    <button class="sub-nav-btn" data-subtab="missoes-cumpridas">Missões Cumpridas</button>
+                    <button class="sub-nav-btn" data-subtab="gerenciar-missoes">Gerenciar Missões</button>
+                </div>
+                
+                <div class="sub-content">
+                    <!-- Missões do Dia -->
+                    <div id="missoes-dia" class="sub-tab active">
+                        <div class="missions-list" id="daily-missions">
+                            <!-- Missões do dia serão adicionadas via JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Missões Cumpridas -->
+                    <div id="missoes-cumpridas" class="sub-tab">
+                        <div class="missions-list" id="completed-missions">
+                            <!-- Missões cumpridas serão adicionadas via JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Gerenciar Missões -->
+                    <div id="gerenciar-missoes" class="sub-tab">
+                        <div class="form-container">
+                            <h3>Cadastrar Nova Missão</h3>
+                            <form id="mission-form">
+                                <div class="form-group">
+                                    <label for="mission-name">Nome da Missão</label>
+                                    <input type="text" id="mission-name" placeholder="Ex: Ir à academia" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="mission-emoji">Emoji (opcional)</label>
+                                    <input type="text" id="mission-emoji" placeholder="🏋️">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="mission-type">Tipo de Missão</label>
+                                    <select id="mission-type" required>
+                                        <option value="diaria">Diária</option>
+                                        <option value="semanal">Semanal</option>
+                                        <option value="eventual">Eventual</option>
+                                        <option value="epica">Épica</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group" id="mission-days-container" style="display: none;">
+                                    <label>Dias da Semana (para missões semanais)</label>
+                                    <div class="days-selector">
+                                        <label class="day-checkbox"><input type="checkbox" value="0"> Dom</label>
+                                        <label class="day-checkbox"><input type="checkbox" value="1"> Seg</label>
+                                        <label class="day-checkbox"><input type="checkbox" value="2"> Ter</label>
+                                        <label class="day-checkbox"><input type="checkbox" value="3"> Qua</label>
+                                        <label class="day-checkbox"><input type="checkbox" value="4"> Qui</label>
+                                        <label class="day-checkbox"><input type="checkbox" value="5"> Sex</label>
+                                        <label class="day-checkbox"><input type="checkbox" value="6"> Sáb</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group" id="mission-date-container" style="display: none;">
+                                    <label for="mission-date">Data (para missões eventuais)</label>
+                                    <input type="date" id="mission-date">
+                                </div>
+                                
+                                <div class="form-group" id="mission-deadline-container" style="display: none;">
+                                    <label for="mission-deadline">Prazo (para missões épicas)</label>
+                                    <input type="date" id="mission-deadline">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Atributos Associados</label>
+                                    <div class="attributes-selector" id="mission-attributes">
+                                        <!-- Atributos serão adicionados via JavaScript -->
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mission-class">Classe Associada (opcional)</label>
+                                    <select id="mission-class">
+                                        <option value="">Nenhuma</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="submit-btn">Cadastrar Missão</button>
+                                
+                            </form>
+                        </div>
+                        
+                        <div class="existing-items">
+                            <h3>Missões Cadastradas</h3>
+                            <div class="items-list" id="missions-list">
+                                <!-- Lista de missões cadastradas -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Aba Preparação -->
+            <section id="preparacao" class="tab-content">
+                <div class="page-header">
+                    <h2><i class="fas fa-dumbbell"></i> Preparação</h2>
+                    <div class="time-display">Foco: <span id="focus-time">00:00:00</span></div>
+                </div>
+                
+                <div class="preparation-sections">
+                    <!-- Arena -->
+                    <div class="preparation-section">
+                        <h3><i class="fas fa-helmet-battle"></i> Arena</h3>
+                        
+                        <div class="sub-nav">
+                            <button class="sub-nav-btn active" data-subtab="treinos-dia">Treinos do Dia</button>
+                            <button class="sub-nav-btn" data-subtab="gerenciar-treinos">Gerenciar Treinos</button>
+                            <button class="sub-nav-btn" data-subtab="historico-treinos">Histórico</button>
+                        </div>
+                        
+                        <div class="sub-content">
+                            <!-- Treinos do Dia -->
+                            <div id="treinos-dia" class="sub-tab active">
+                                <div class="timer-container">
+                                    <div class="timer-display" id="workout-timer">00:00:00</div>
+                                    <div class="timer-controls">
+                                        <button class="timer-btn start-btn" id="start-workout-timer"><i class="fas fa-play"></i></button>
+                                        <button class="timer-btn pause-btn" id="pause-workout-timer"><i class="fas fa-pause"></i></button>
+                                        <button class="timer-btn reset-btn" id="reset-workout-timer"><i class="fas fa-redo"></i></button>
+                                    </div>
+                                </div>
+                                
+                                <div class="workouts-list" id="daily-workouts">
+                                    <!-- Treinos do dia serão carregados aqui -->
+                                </div>
+                            </div>
+                            
+                            <!-- Gerenciar Treinos -->
+                            <div id="gerenciar-treinos" class="sub-tab">
+                                <div class="form-container">
+                                    <h3>Cadastrar Novo Treino</h3>
+                                    <form id="workout-form">
+                                        <div class="form-group">
+                                            <label for="workout-name">Nome do Treino</label>
+                                            <input type="text" id="workout-name" placeholder="Ex: Flexões" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="workout-emoji">Emoji (opcional)</label>
+                                            <input type="text" id="workout-emoji" placeholder="💪">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="workout-type">Tipo de Treino</label>
+                                            <select id="workout-type" required>
+                                                <option value="repeticao">Repetição</option>
+                                                <option value="distancia">Distância</option>
+                                                <option value="maior-tempo">Maior Tempo</option>
+                                                <option value="menor-tempo">Menor Tempo</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Dias da Semana</label>
+                                            <div class="days-selector">
+                                                <label class="day-checkbox"><input type="checkbox" value="0"> Dom</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="1"> Seg</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="2"> Ter</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="3"> Qua</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="4"> Qui</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="5"> Sex</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="6"> Sáb</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="submit-btn">Cadastrar Treino</button>
+                                    </form>
+                                </div>
+                                
+                                <div class="existing-items">
+                                    <h3>Treinos Cadastrados</h3>
+                                    <div class="items-list" id="workouts-list">
+                                        <!-- Lista de treinos cadastrados -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="historico-treinos" class="sub-tab">
+                                <div class="items-list history-list" id="completed-workouts">
+                                    <!-- Histórico de treinos concluídos -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Biblioteca -->
+                    <div class="preparation-section">
+                        <h3><i class="fas fa-book-open"></i> Biblioteca</h3>
+                        
+                        <div class="sub-nav">
+                            <button class="sub-nav-btn active" data-subtab="estudos-dia">Estudos do Dia</button>
+                            <button class="sub-nav-btn" data-subtab="gerenciar-estudos">Gerenciar Estudos</button>
+                            <button class="sub-nav-btn" data-subtab="historico-estudos">Histórico</button>
+                            <button class="sub-nav-btn" data-subtab="livros">Livros</button>
+                        </div>
+                        
+                        <div class="sub-content">
+                            <!-- Estudos do Dia -->
+                            <div id="estudos-dia" class="sub-tab active">
+                                <div class="studies-list" id="daily-studies">
+                                    <!-- Estudos do dia serão carregados aqui -->
+                                </div>
+                            </div>
+                            
+                            
+                            <!-- Gerenciar Estudos -->
+                            <div id="gerenciar-estudos" class="sub-tab">
+                                <div class="form-container">
+                                    <h3>Cadastrar Novo Estudo</h3>
+                                    <form id="study-form">
+                                        <div class="form-group">
+                                            <label for="study-name">Nome do Estudo</label>
+                                            <input type="text" id="study-name" placeholder="Ex: Álgebra Linear" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="study-emoji">Emoji (opcional)</label>
+                                            <input type="text" id="study-emoji" placeholder="📚">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="study-type">Tipo de Estudo</label>
+                                            <select id="study-type" required>
+                                                <option value="logico">Lógico</option>
+                                                <option value="criativo">Criativo</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Dias da Semana</label>
+                                            <div class="days-selector">
+                                                <label class="day-checkbox"><input type="checkbox" value="0"> Dom</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="1"> Seg</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="2"> Ter</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="3"> Qua</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="4"> Qui</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="5"> Sex</label>
+                                                <label class="day-checkbox"><input type="checkbox" value="6"> Sáb</label>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="submit-btn">Cadastrar Estudo</button>
+                                    </form>
+                                </div>
+                                
+                                <div class="existing-items">
+                                    <h3>Estudos Cadastrados</h3>
+                                    <div class="items-list" id="studies-list">
+                                        <!-- Lista de estudos cadastrados -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="historico-estudos" class="sub-tab">
+                                <div class="items-list history-list" id="completed-studies">
+                                    <!-- Histórico de estudos concluídos -->
+                                </div>
+                            </div>
+
+                            <div id="livros" class="sub-tab">
+                                <div class="books-section">
+                                    <h3>Livros Cadastrados</h3>
+                                    <div class="items-list" id="books-list">
+                                        <!-- Livros serão carregados aqui -->
+                                    </div>
+                                    <br>
+                                    <button class="add-btn" id="add-book-btn"><i class="fas fa-plus"></i> Adicionar Livro</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="calendarios" class="tab-content">
+                <div class="page-header">
+                    <h2><i class="fas fa-calendar-alt"></i> Calendários</h2>
+                </div>
+                <div class="calendar-panel">
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" id="cal-prev-month"><i class="fas fa-chevron-left"></i></button>
+                        <div class="calendar-title" id="cal-month-title">Mês/Ano</div>
+                        <button class="calendar-nav-btn" id="cal-next-month"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                    </div>
+                    <div class="calendar-grid" id="cal-missions-grid">
+                        <!-- Dias do calendário -->
+                    </div>
+                    <div class="calendar-legend">
+                        <div class="legend-item"><span class="legend-dot daily"></span> Diárias</div>
+                        <div class="legend-item"><span class="legend-dot weekly"></span> Semanais</div>
+                        <div class="legend-item"><span class="legend-dot eventual"></span> Eventuais</div>
+                        <div class="legend-item"><span class="legend-dot epic"></span> Épicas (prazo)</div>
+                        <div class="legend-item"><span class="legend-dot workout"></span> Treinos</div>
+                        <div class="legend-item"><span class="legend-dot study"></span> Estudos</div>
+                        <div class="legend-item"><span class="legend-dot rest"></span> Descanso</div>
+                    </div>
+                    <div class="calendar-details">
+                        <h3 id="cal-details-title">Detalhes do dia</h3>
+                        <div class="calendar-details-filter">
+                            <label for="cal-details-filter">Filtrar por tipo:</label>
+                            <select id="cal-details-filter">
+                                <option value="all">Todos</option>
+                                <option value="daily">Missões diárias</option>
+                                <option value="weekly">Missões semanais</option>
+                                <option value="eventual">Missões eventuais</option>
+                                <option value="epic">Missões épicas</option>
+                                <option value="workout">Treinos</option>
+                                <option value="study">Estudos</option>
+                            </select>
+                        </div>
+                        <div class="calendar-rest-control" id="cal-rest-control">
+                            <span class="calendar-rest-status" id="cal-rest-status">Dia normal</span>
+                            <button class="calendar-rest-btn" id="cal-rest-toggle">Marcar descanso</button>
+                        </div>
+                        <div class="calendar-details-list" id="cal-details-list">
+                            <p class="empty-message">Selecione um dia para ver as missões.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Aba Chefões -->
+            
+            <section id="chefoes" class="tab-content">
+                <div class="page-header">
+                    <h2><i class="fas fa-dragon"></i> Chefões</h2>
+                    <div class="time-display">Tempo até meia-noite: <span id="midnight-countdown">--:--:--</span></div>
+                </div>
+                
+                <div class="bosses-container">
+                    <div class="boss-card" data-boss="fisico">
+                        <div class="boss-header">
+                            <h3><i class="fas fa-dumbbell"></i> Chefe Físico</h3>
+                            <span class="boss-hp">HP: <span id="boss-fisico-hp">100</span>/100</span>
+                        </div>
+                        <div class="boss-bar">
+                            <div class="boss-bar-fill" id="boss-fisico-bar" style="width: 100%"></div>
+                        </div>
+                        <p class="boss-desc">Atributos: Vigor, Força, Agilidade, Habilidade</p>
+                        <p class="boss-reset">Restauração: Diária</p>
+                    </div>
+                    
+                    <div class="boss-card" data-boss="mental">
+                        <div class="boss-header">
+                            <h3><i class="fas fa-brain"></i> Chefe Mental</h3>
+                            <span class="boss-hp">HP: <span id="boss-mental-hp">100</span>/100</span>
+                        </div>
+                        <div class="boss-bar">
+                            <div class="boss-bar-fill" id="boss-mental-bar" style="width: 100%"></div>
+                        </div>
+                        <p class="boss-desc">Atributos: Disciplina, Conhecimento, Inteligência, Criatividade</p>
+                        <p class="boss-reset">Restauração: Diária</p>
+                    </div>
+                    
+                    <div class="boss-card" data-boss="social">
+                        <div class="boss-header">
+                            <h3><i class="fas fa-users"></i> Chefe Social</h3>
+                            <span class="boss-hp">HP: <span id="boss-social-hp">100</span>/100</span>
+                        </div>
+                        <div class="boss-bar">
+                            <div class="boss-bar-fill" id="boss-social-bar" style="width: 100%"></div>
+                        </div>
+                        <p class="boss-desc">Atributos: Sociabilidade, Liderança</p>
+                        <p class="boss-reset">Restauração: Semanal (segunda-feira)</p>
+                    </div>
+                    
+                    <div class="boss-card" data-boss="espiritual">
+                        <div class="boss-header">
+                            <h3><i class="fas fa-pray"></i> Chefe Espiritual</h3>
+                            <span class="boss-hp">HP: <span id="boss-espiritual-hp">100</span>/100</span>
+                        </div>
+                        <div class="boss-bar">
+                            <div class="boss-bar-fill" id="boss-espiritual-bar" style="width: 100%"></div>
+                        </div>
+                        <p class="boss-desc">Atributos: Casamento, Fé, Justiça</p>
+                        <p class="boss-reset">Restauração: Semanal (segunda-feira)</p>
+                    </div>
+                </div>
+                
+            </section>
+
+            <!-- Aba Estatísticas -->
+            <section id="estatisticas" class="tab-content">
+                <div class="page-header">
+                    <h2><i class="fas fa-chart-bar"></i> Estatísticas e Records</h2>
+                </div>
+                
+                <div class="stats-tabs">
+                    <div class="sub-nav">
+                        <button class="sub-nav-btn active" data-subtab="estatisticas-absolutas">Estatísticas Absolutas</button>
+                        <button class="sub-nav-btn" data-subtab="records">Records</button>
+                        <button class="sub-nav-btn" data-subtab="graficos">Gráficos</button>
+                    </div>
+                    
+                    <div class="sub-content">
+                        <!-- Estatísticas Absolutas -->
+                        <div id="estatisticas-absolutas" class="sub-tab active">
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <h4><i class="fas fa-dumbbell"></i> Treinos Realizados</h4>
+                                    <div class="stat-value" id="stat-workouts-done">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <h4><i class="fas fa-times-circle"></i> Treinos Ignorados</h4>
+                                    <div class="stat-value" id="stat-workouts-ignored">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <h4><i class="fas fa-book"></i> Estudos Realizados</h4>
+                                    <div class="stat-value" id="stat-studies-done">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <h4><i class="fas fa-times-circle"></i> Estudos Ignorados</h4>
+                                    <div class="stat-value" id="stat-studies-ignored">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <h4><i class="fas fa-book-reader"></i> Livros Lidos</h4>
+                                    <div class="stat-value" id="stat-books-read">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <h4><i class="fas fa-flag-checkered"></i> Missões Concluídas</h4>
+                                    <div class="stat-value" id="stat-missions-done">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <h4><i class="fas fa-flag"></i> Missões Falhadas</h4>
+                                    <div class="stat-value" id="stat-missions-failed">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <h4><i class="fas fa-balance-scale"></i> Justiças Realizadas</h4>
+                                    <div class="stat-value" id="stat-justice-done">0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="detailed-stats">
+                                <h4>Estatísticas Detalhadas por Treino</h4>
+                                <div class="table-container">
+                                    <table id="workout-details-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Treino</th>
+                                                <th>Total Repetições</th>
+                                                <th>Total Distância (km)</th>
+                                                <th>Tempo Total (min)</th>
+                                                <th>Vezes Realizado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Dados serão preenchidos pelo JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Records -->
+                        <div id="records" class="sub-tab">
+                            <div class="records-container">
+                                <h3>Records Pessoais</h3>
+                                <div class="records-list" id="personal-records">
+                                    <!-- Records serão preenchidos pelo JavaScript -->
+                                </div>
+                            </div>
+                            <h3>Dias Mais Produtivos</h3>
+                            <div class="table-container">
+                                <table id="productive-days-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Missões</th>
+                                            <th>Treinos</th>
+                                            <th>Estudos</th>
+                                            <th>Total XP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dados serão preenchidos pelo JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Gráficos -->
+                        <div id="graficos" class="sub-tab">
+                            <div class="charts-container">
+                                <div class="chart-box">
+                                    <h4>Progresso de Atributos</h4>
+                                    <canvas id="attributes-chart" width="400" height="200"></canvas>
+                                </div>
+                                <div class="chart-box">
+                                    <h4>Distribuição de Atividades</h4>
+                                    <canvas id="activities-chart" width="400" height="200"></canvas>
+                                </div>
+                                <div class="chart-box">
+                                    <h4>Progresso Semanal</h4>
+                                    <canvas id="weekly-chart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Aba Gestão -->
+            <section id="gestao" class="tab-content">
+                <div class="page-header">
+                    <h2><i class="fas fa-wallet"></i> Gestão</h2>
+                </div>
+                <div class="finance-summary">
+                    <div class="finance-card income">
+                        <div class="finance-label">Receitas</div>
+                        <div class="finance-value" id="finance-income">R$ 0,00</div>
+                    </div>
+                    <div class="finance-card expense">
+                        <div class="finance-label">Despesas</div>
+                        <div class="finance-value" id="finance-expense">R$ 0,00</div>
+                    </div>
+                    <div class="finance-card balance">
+                        <div class="finance-label">Saldo</div>
+                        <div class="finance-value" id="finance-balance">R$ 0,00</div>
+                    </div>
+                </div>
+                
+                <div class="finance-filters">
+                    <div class="form-group">
+                        <label for="finance-month">Mês</label>
+                        <select id="finance-month"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="finance-filter-type">Tipo</label>
+                        <select id="finance-filter-type">
+                            <option value="all">Todos</option>
+                            <option value="income">Receita</option>
+                            <option value="expense">Despesa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="finance-filter-category">Categoria</label>
+                        <input type="text" id="finance-filter-category" placeholder="Ex: Saúde">
+                    </div>
+                </div>
+                
+                <div class="finance-list" id="finance-list">
+                    <p class="empty-message">Nenhum lançamento ainda.</p>
+                </div>
+
+                <div class="finance-charts">
+                    <div class="chart-box">
+                        <h4>Receitas vs Despesas</h4>
+                        <canvas id="finance-pie-chart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4>Por Categoria</h4>
+                        <canvas id="finance-category-chart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4>Saldo Mensal (últimos 6 meses)</h4>
+                        <canvas id="finance-balance-chart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+                
+                <div class="form-container finance-form">
+                    <h3>Novo Lançamento</h3>
+                    <form id="finance-form">
+                        <div class="form-group">
+                            <label for="finance-type">Tipo</label>
+                            <select id="finance-type" required>
+                                <option value="income">Receita</option>
+                                <option value="expense">Despesa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="finance-amount">Valor (R$)</label>
+                            <input type="number" id="finance-amount" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="finance-category">Categoria (opcional)</label>
+                            <input type="text" id="finance-category" placeholder="Ex: Saúde, Estudos, Lazer">
+                        </div>
+                        <div class="form-group">
+                            <label for="finance-desc">Descrição (opcional)</label>
+                            <input type="text" id="finance-desc" placeholder="Detalhe do lançamento">
+                        </div>
+                        <button type="submit" class="submit-btn">Adicionar</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Aba Diário -->
+            <section id="diario" class="tab-content">
+                <div class="page-header">
+                    <h2><i class="fas fa-book"></i> Diário Pessoal</h2>
+                    <div class="time-display">Data: <span id="diary-date"></span></div>
+                </div>
+                
+                <div class="diary-tabs">
+                    <div class="sub-nav">
+                        <button class="sub-nav-btn active" data-subtab="escrever-diario">Escrever</button>
+                        <button class="sub-nav-btn" data-subtab="ler-diario">Ler Diário</button>
+                    </div>
+                    
+                    <div class="sub-content">
+                        <!-- Escrever Diário -->
+                        <div id="escrever-diario" class="sub-tab active">
+                            <div class="form-container">
+                                <div class="form-group">
+                                    <label for="diary-title">Título</label>
+                                    <input type="text" id="diary-title" placeholder="Título do seu relato">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="diary-content">Conteúdo</label>
+                                    <textarea id="diary-content" rows="10" placeholder="Escreva sobre seu dia, conquistas, sentimentos..."></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Atributos para Ganhar XP (selecione até 3)</label>
+                                    <div class="attributes-selector" id="diary-attributes">
+                                        <!-- Atributos serão adicionados via JavaScript -->
+                                    </div>
+                                </div>
+                                
+                                <button class="submit-btn" id="save-diary">Salvar Entrada no Diário</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Ler Diário -->
+                        <div id="ler-diario" class="sub-tab">
+                            <div class="diary-filter">
+                                <input type="text" id="diary-search" placeholder="Buscar no diário...">
+                                <select id="diary-filter-month">
+                                    <option value="">Todos os meses</option>
+                                    <!-- Meses serão adicionados via JavaScript -->
+                                </select>
+                            </div>
+                            
+                            <div class="diary-entries" id="diary-entries-list">
+                                <!-- Entradas do diário serão adicionadas via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Modal para adicionar itens -->
+        <div class="modal" id="item-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-title">Adicionar Item</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="item-form">
+                        <!-- Conteúdo do formulário será preenchido dinamicamente -->
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
