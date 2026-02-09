@@ -278,7 +278,7 @@ function ensureClasses() {
     if (appData.classes.length === 0) {
         const legacyClassName = appData.hero?.class;
         const baseName = legacyClassName || 'Classe';
-        appData.classes.push({ id: 1, name: baseName, emoji: "ðŸ’¼", xp: 0, maxXp: 100, level: 0 });
+        appData.classes.push({ id: 1, name: baseName, emoji: "💼", xp: 0, maxXp: 100, level: 0 });
     }
     if (appData.hero && Object.prototype.hasOwnProperty.call(appData.hero, 'class')) {
         delete appData.hero.class;
@@ -288,7 +288,7 @@ function ensureClasses() {
         if (!Number.isFinite(cls.id)) cls.id = nextId;
         nextId = Math.max(nextId, cls.id + 1);
         if (!cls.name) cls.name = 'Classe';
-        if (!cls.emoji) cls.emoji = "ðŸ’¼";
+        if (!cls.emoji) cls.emoji = "💼";
         if (!Number.isFinite(cls.xp) || cls.xp < 0) cls.xp = 0;
         if (!Number.isFinite(cls.maxXp) || cls.maxXp <= 0) cls.maxXp = 100;
         if (!Number.isFinite(cls.level) || cls.level < 0) cls.level = 0;
@@ -936,11 +936,14 @@ function updateClassesList() {
         classCard.className = 'item-card';
         classCard.innerHTML = `
             <div class="item-info">
-                <span class="item-emoji">${cls.emoji || 'ðŸ’¼'}</span>
+                <span class="item-emoji">${cls.emoji || '💼'}</span>
                 <div>
                     <div class="item-name">${cls.name}${isPrimary ? ' (Principal)' : ''}</div>
                     <div class="item-level">NÃ­vel ${level} - ${currentXp}/100 XP</div>
                     <div class="item-type">Progresso: ${percentage.toFixed(0)}%</div>
+                    <div class="attribute-bar">
+                        <div class="attribute-fill" style="width: ${percentage}%"></div>
+                    </div>
                 </div>
             </div>
             <div class="item-actions">
@@ -978,7 +981,7 @@ function updateMissionClassOptions() {
         appData.classes.forEach(cls => {
             const option = document.createElement('option');
             option.value = String(cls.id);
-            option.textContent = `${cls.emoji || 'ðŸ’¼'} ${cls.name}`;
+            option.textContent = `${cls.emoji || '💼'} ${cls.name}`;
             select.appendChild(option);
         });
     }
@@ -3891,7 +3894,7 @@ function handleClassSubmit(e) {
     const newClass = {
         id: appData.classes.length > 0 ? Math.max(...appData.classes.map(c => c.id)) + 1 : 1,
         name,
-        emoji: emoji || 'ðŸ’¼',
+        emoji: emoji || '💼',
         xp: 0,
         maxXp: 100,
         level: 0

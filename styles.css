@@ -1545,6 +1545,7 @@ tr:hover {
         overflow-x: auto;
         justify-content: flex-start;
         padding: 10px;
+        -webkit-overflow-scrolling: touch;
     }
     
     .nav-item {
@@ -1685,7 +1686,62 @@ tr:hover {
     }
 
     .main-content {
-        padding-bottom: 90px;
+        padding-bottom: calc(90px + env(safe-area-inset-bottom));
+    }
+}
+
+@media (max-width: 420px) {
+    body {
+        font-size: 15px;
+    }
+    
+    .container {
+        padding: 0 12px;
+    }
+    
+    .profile-pic {
+        width: 84px;
+        height: 84px;
+    }
+    
+    .hero-name {
+        font-size: 1.35rem;
+    }
+    
+    .app-title {
+        font-size: 1.5rem;
+    }
+    
+    .stats-item {
+        font-size: 0.8rem;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea,
+    .submit-btn,
+    .action-btn {
+        font-size: 16px;
+    }
+    
+    .submit-btn,
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+    }
+    
+    .item-card .item-info,
+    .mission-card .mission-header,
+    .study-card .study-header,
+    .workout-card .workout-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+    
+    .nav-item {
+        min-width: 60px;
     }
 }
 
