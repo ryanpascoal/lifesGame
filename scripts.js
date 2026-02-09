@@ -939,7 +939,7 @@ function updateClassesList() {
                 <span class="item-emoji">${cls.emoji || '💼'}</span>
                 <div>
                     <div class="item-name">${cls.name}${isPrimary ? ' (Principal)' : ''}</div>
-                    <div class="item-level">NÃ­vel ${level} - ${currentXp}/100 XP</div>
+                    <div class="item-level">Nível ${level} - ${currentXp}/100 XP</div>
                     <div class="item-type">Progresso: ${percentage.toFixed(0)}%</div>
                     <div class="attribute-bar">
                         <div class="attribute-fill" style="width: ${percentage}%"></div>
