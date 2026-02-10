@@ -6,8 +6,8 @@ const appData = {
         level: 0,
         xp: 0,
         maxXp: 100,
-        lives: 4,
-        maxLives: 4,
+        lives: 5,
+        maxLives: 5,
         coins: 0,
         protection: {
             shield: false
@@ -68,6 +68,7 @@ const appData = {
         booksRead: 0,
         missionsDone: 0,
         missionsFailed: 0,
+        deaths: 0,
         justiceDone: 0,
         maxStreakGeneral: 0,
         maxStreakPhysical: 0,
@@ -246,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCurrentDate();
     setInterval(checkDailyReset, 60000);
     setInterval(updateStreaks, 60000);
+    handleGameOverIfNeeded();
 });
 
 // Carregar dados do localStorage
@@ -489,21 +491,33 @@ function applyActivityPenalties(config) {
         }
     });
 
-    if (appData.hero.protection?.shield) {
-        appData.hero.protection.shield = false;
+    let livesLost = 0;
+    let shieldUsed = false;
+    incompleteItems.forEach(() => {
+        if (appData.hero.protection?.shield) {
+            appData.hero.protection.shield = false;
+            shieldUsed = true;
+            return;
+        }
+        appData.hero.lives = Math.max(0, appData.hero.lives - 1);
+        livesLost++;
+    });
+
+    if (shieldUsed) {
         alert(alertShield);
         addHeroLog('penalty', logShieldTitle, logShieldContent);
-        return;
     }
-    
-    appData.hero.lives = Math.max(0, appData.hero.lives - 1);
-    streakKeys.forEach(key => {
-        appData.hero.streak[key] = 0;
-    });
-    addAttributeXP(6, -1);
-    appData.statistics[statsKey] = (appData.statistics[statsKey] || 0) + 1;
-    alert(alertFail);
-    addHeroLog('penalty', logFailTitle, logFailContent);
+
+    if (livesLost > 0) {
+        streakKeys.forEach(key => {
+            appData.hero.streak[key] = 0;
+        });
+        addAttributeXP(6, -1);
+        appData.statistics[statsKey] = (appData.statistics[statsKey] || 0) + incompleteItems.length;
+        alert(alertFail);
+        addHeroLog('penalty', logFailTitle, logFailContent);
+        handleGameOverIfNeeded();
+    }
 }
 
 // Gerar atividades do dia
@@ -1387,6 +1401,7 @@ document.getElementById('shop-item-form')?.addEventListener('submit', function(e
     
     // Atualizar UI
     updateUI();
+    handleGameOverIfNeeded();
     
     alert('Item cadastrado com sucesso!');
 });
@@ -1975,6 +1990,7 @@ function updateStatistics() {
     document.getElementById('stat-books-read').textContent = appData.statistics.booksRead || 0;
     document.getElementById('stat-missions-done').textContent = appData.statistics.missionsDone || 0;
     document.getElementById('stat-missions-failed').textContent = appData.statistics.missionsFailed || 0;
+    document.getElementById('stat-deaths').textContent = appData.statistics.deaths || 0;
     document.getElementById('stat-justice-done').textContent = appData.statistics.justiceDone || 0;
     
     // Atualizar tabela de detalhes de treinos
@@ -3476,7 +3492,79 @@ function showMissionCompletionModal(missionId) {
 function closeModal() {
     const modal = document.getElementById('item-modal');
     if (modal) {
+        if (modal.dataset.locked === 'true') return;
         modal.classList.remove('active');
+    }
+}
+
+function resetAllXpKeepLevels() {
+    if (!appData.hero) appData.hero = {};
+    appData.hero.xp = 0;
+
+    if (Array.isArray(appData.attributes)) {
+        appData.attributes.forEach(attr => {
+            attr.xp = 0;
+        });
+    }
+
+    if (Array.isArray(appData.classes)) {
+        appData.classes.forEach(cls => {
+            cls.xp = 0;
+        });
+    }
+
+    if (Array.isArray(appData.workouts)) {
+        appData.workouts.forEach(workout => {
+            workout.xp = 0;
+        });
+    }
+
+    if (Array.isArray(appData.studies)) {
+        appData.studies.forEach(study => {
+            study.xp = 0;
+        });
+    }
+}
+
+function showGameOverModal() {
+    const modal = document.getElementById('item-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const form = document.getElementById('item-form');
+    if (!modal || !modalTitle || !form) return;
+
+    modal.dataset.locked = 'true';
+    modal.dataset.gameOverShown = 'true';
+    modalTitle.textContent = 'Game Over';
+    form.innerHTML = `
+        <div class="form-group">
+            <p>Suas vidas chegaram a 0. Ao restaurar, 1 vida volta e todo o XP Ã© zerado (nÃ­veis mantidos).</p>
+        </div>
+        <button type="button" id="gameover-restore-btn" class="submit-btn">Restaurar 1 vida</button>
+    `;
+
+    form.querySelector('#gameover-restore-btn')?.addEventListener('click', function() {
+        const maxLives = Number.isFinite(appData.hero.maxLives) ? appData.hero.maxLives : 1;
+        appData.hero.lives = Math.min(maxLives, 1);
+        resetAllXpKeepLevels();
+        addHeroLog('system', 'Restaurar vida', 'Vida restaurada para 1 e todo o XP foi zerado (níveis mantidos).');
+        modal.dataset.locked = 'false';
+        closeModal();
+        saveToLocalStorage();
+        updateUI();
+    });
+
+    modal.classList.add('active');
+}
+
+function handleGameOverIfNeeded() {
+    if (!appData.hero) return;
+    if (appData.hero.lives <= 0) {
+        const modal = document.getElementById('item-modal');
+        if (!modal || modal.dataset.gameOverShown === 'true') return;
+        if (!appData.statistics) appData.statistics = {};
+        appData.statistics.deaths = (appData.statistics.deaths || 0) + 1;
+        addHeroLog('system', 'Game Over', 'Vidas chegaram a 0. Modal de restauraÃ§Ã£o exibido e XP serÃ¡ zerado ao confirmar.');
+        showGameOverModal();
     }
 }
 
