@@ -2357,6 +2357,42 @@ tr:hover {
     color: var(--gray-color);
 }
 
+/* Deixar logs mais distinguíveis */
+.logs-container .log-item {
+    border-left: 4px solid rgba(255, 255, 255, 0.12);
+    background: rgba(16, 21, 35, 0.75);
+}
+
+.logs-container .log-item:nth-child(even) {
+    background: rgba(16, 21, 35, 0.92);
+}
+
+.log-icon {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.log-item.mission { border-left-color: #8A5CFF; }
+.log-item.workout { border-left-color: #20D980; }
+.log-item.study { border-left-color: #10F2FF; }
+.log-item.book { border-left-color: #FFC857; }
+.log-item.level { border-left-color: #FF3FA4; }
+.log-item.item { border-left-color: #7CFFB2; }
+.log-item.boss { border-left-color: #FF7A59; }
+.log-item.rest { border-left-color: #4A90E2; }
+.log-item.penalty { border-left-color: #FF4D6D; }
+.log-item.system { border-left-color: #8C96A6; }
+
+.log-item.penalty .log-title,
+.log-item.system .log-title {
+    color: #FFB3BE;
+}
 /* Estilos para missões falhadas */
 .mission-card.failed {
     border-left: 4px solid #f44336;
@@ -2432,5 +2468,50 @@ tr:hover {
     background: linear-gradient(135deg, #e53935, #d32f2f);
 }
 
+/* Simplifica o visual no mobile */
+@media (max-width: 768px) {
+    :root {
+        --box-shadow: none;
+        --glow-primary: none;
+        --glow-accent: none;
+        --card-border: rgba(255, 255, 255, 0.08);
+        --border-radius: 10px;
+    }
+
+    body {
+        background: #0A0D16;
+    }
+
+    .header,
+    .main-nav,
+    .profile-header,
+    .profile-tabs,
+    .shop-inventory,
+    .settings-section,
+    .streak-card,
+    .item-card,
+    .inventory-item,
+    .mission-card,
+    .workout-card,
+    .study-card,
+    .hero-logs-section,
+    .log-item {
+        background: #0D1220;
+        box-shadow: none;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-item.active {
+        box-shadow: none;
+    }
+
+    .nav-item:hover:not(.active) {
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .tab-content.active {
+        animation: none;
+    }
+}
 
 

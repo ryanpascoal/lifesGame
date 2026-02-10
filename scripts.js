@@ -260,6 +260,7 @@ function loadFromLocalStorage() {
             ensureCoreAttributes();
             ensureClasses();
             ensureStartingLevels();
+            normalizeClassIds();
             console.log('Dados carregados do localStorage');
         } catch (e) {
             console.error('Erro ao carregar dados:', e);
@@ -327,6 +328,22 @@ function ensureStartingLevels() {
         if (!Number.isFinite(study.level) || study.level < 0) study.level = 0;
         if (!Number.isFinite(study.xp) || study.xp < 0) study.xp = 0;
     });
+}
+
+function normalizeClassIds() {
+    const validClassIds = new Set((appData.classes || []).map(c => Number(c.id)));
+    const normalizeList = list => {
+        if (!Array.isArray(list)) return;
+        list.forEach(item => {
+            if (item && Object.prototype.hasOwnProperty.call(item, 'classId')) {
+                const normalized = Number(item.classId);
+                item.classId = Number.isFinite(normalized) && validClassIds.has(normalized) ? normalized : null;
+            }
+        });
+    };
+
+    normalizeList(appData.missions);
+    normalizeList(appData.completedMissions);
 }
 
 // Função para mesclar dados
@@ -2684,13 +2701,59 @@ function setCalendarSelection(cell) {
     }
 }
 
-function renderCalendarDetails(dateStr) {
-    const detailsTitle = document.getElementById('cal-details-title');
-    const detailsList = document.getElementById('cal-details-list');
-    const restStatus = document.getElementById('cal-rest-status');
-    const restToggle = document.getElementById('cal-rest-toggle');
-    const detailsFilter = document.getElementById('cal-details-filter');
-    if (!detailsTitle || !detailsList) return;
+  function ensureCalendarDetailsFilterOptions() {
+      const detailsFilter = document.getElementById('cal-details-filter');
+      if (!detailsFilter) return;
+  
+      const currentValue = calendarState.detailsFilter || 'all';
+      const baseOptions = [
+          { value: 'all', label: 'Todos' },
+          { value: 'daily', label: 'Missões diárias' },
+          { value: 'weekly', label: 'Missões semanais' },
+          { value: 'eventual', label: 'Missões eventuais' },
+          { value: 'epic', label: 'Missões épicas' },
+          { value: 'workout', label: 'Treinos' },
+          { value: 'study', label: 'Estudos' }
+      ];
+  
+      detailsFilter.innerHTML = '';
+  
+      baseOptions.forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt.value;
+          option.textContent = opt.label;
+          detailsFilter.appendChild(option);
+      });
+  
+      if (Array.isArray(appData.classes) && appData.classes.length > 0) {
+          const classGroup = document.createElement('optgroup');
+          classGroup.label = 'Classes';
+  
+          appData.classes.forEach(cls => {
+              const option = document.createElement('option');
+              option.value = `class:${cls.id}`;
+              option.textContent = `Classe: ${cls.name}`;
+              classGroup.appendChild(option);
+          });
+  
+          detailsFilter.appendChild(classGroup);
+      }
+  
+      if ([...detailsFilter.options].some(o => o.value === currentValue)) {
+          detailsFilter.value = currentValue;
+      } else {
+          calendarState.detailsFilter = 'all';
+          detailsFilter.value = 'all';
+      }
+  }
+  
+  function renderCalendarDetails(dateStr) {
+      const detailsTitle = document.getElementById('cal-details-title');
+      const detailsList = document.getElementById('cal-details-list');
+      const restStatus = document.getElementById('cal-rest-status');
+      const restToggle = document.getElementById('cal-rest-toggle');
+      const detailsFilter = document.getElementById('cal-details-filter');
+      if (!detailsTitle || !detailsList) return;
     
     const dateObj = parseLocalDateString(dateStr);
     detailsTitle.textContent = `Detalhes de ${dateObj.toLocaleDateString('pt-BR')}`;
@@ -2702,15 +2765,22 @@ function renderCalendarDetails(dateStr) {
         restToggle.textContent = isRest ? 'Remover descanso' : 'Marcar descanso';
     }
 
-    if (detailsFilter) {
-        detailsFilter.value = calendarState.detailsFilter || 'all';
-    }
-    
-    const items = getCalendarItemsForDate(dateStr);
-    const filterValue = (calendarState.detailsFilter || 'all');
-    const filteredItems = filterValue === 'all'
-        ? items
-        : items.filter(item => item.typeClass === filterValue);
+      if (detailsFilter) {
+          ensureCalendarDetailsFilterOptions();
+          detailsFilter.value = calendarState.detailsFilter || 'all';
+      }
+      
+      const items = getCalendarItemsForDate(dateStr);
+      const filterValue = (calendarState.detailsFilter || 'all');
+      let filteredItems = items;
+      if (filterValue !== 'all') {
+          if (filterValue.startsWith('class:')) {
+              const classId = parseInt(filterValue.split(':')[1], 10);
+              filteredItems = items.filter(item => item.kindClass === 'kind' && Number(item.classId) === classId);
+          } else {
+              filteredItems = items.filter(item => item.typeClass === filterValue);
+          }
+      }
     detailsList.innerHTML = '';
     
     if (filteredItems.length === 0) {
@@ -4661,30 +4731,44 @@ function damageBoss(bossName, damage) {
 }
 
 // Adicione esta função para gerar resumos do herói
-function generateHeroLogs() {
-    const container = document.getElementById('hero-logs');
-    if (!container) return;
-    
-    container.innerHTML = '';
+  function generateHeroLogs() {
+      const container = document.getElementById('hero-logs');
+      if (!container) return;
+      
+      container.innerHTML = '';
     
     if (!appData.heroLogs || appData.heroLogs.length === 0) {
         container.innerHTML = '<p class="empty-message">Nenhum registro ainda.</p>';
         return;
     }
     
-    const recentLogs = appData.heroLogs.slice(-20).reverse();
-    
-    recentLogs.forEach(log => {
-        const logElement = document.createElement('div');
-        logElement.className = `log-item ${log.type}`;
-        const logDate = parseLocalDateString(log.date).toLocaleString('pt-BR');
-        logElement.innerHTML = `
-            <div class="log-icon">📝</div>
-            <div class="log-content">
-                <div class="log-title">${log.title}</div>
-                <div class="log-text">${log.content}</div>
-                <div class="log-text">${logDate}</div>
-            </div>
+      const recentLogs = appData.heroLogs.slice(-20).reverse();
+      
+      const logIcons = {
+          mission: '🎯',
+          workout: '💪',
+          study: '📚',
+          book: '📖',
+          level: '🏆',
+          item: '🎁',
+          boss: '🐉',
+          rest: '🌙',
+          penalty: '⚠️',
+          system: '⚙️'
+      };
+      
+      recentLogs.forEach(log => {
+          const logElement = document.createElement('div');
+          logElement.className = `log-item ${log.type}`;
+          const logDate = parseLocalDateString(log.date).toLocaleString('pt-BR');
+          const icon = logIcons[log.type] || '📝';
+          logElement.innerHTML = `
+              <div class="log-icon">${icon}</div>
+              <div class="log-content">
+                  <div class="log-title">${log.title}</div>
+                  <div class="log-text">${log.content}</div>
+                  <div class="log-text">${logDate}</div>
+              </div>
         `;
         container.appendChild(logElement);
     });
@@ -5075,6 +5159,7 @@ function importData() {
                 ensureCoreAttributes();
                 ensureClasses();
                 ensureStartingLevels();
+                normalizeClassIds();
                 populateFinanceMonthOptions();
 
                 if (diaryDbAvailable) {
@@ -5155,11 +5240,8 @@ function formatDate(dateString) {
     if (!dateString) return '';
     
     const date = parseLocalDateString(dateString);
-    
-    // Corrigir fuso horário
-    const localDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
-    
-    return localDate.toLocaleDateString('pt-BR', {
+
+    return date.toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
