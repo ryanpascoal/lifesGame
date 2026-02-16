@@ -926,7 +926,13 @@ body {
     color: #FF4D8D;
 }
 
-/* PreparaÃ§Ã£o: Arena vs Biblioteca */
+.calendar-tag.skipped {
+    background: rgba(243, 156, 18, 0.16);
+    border-color: rgba(243, 156, 18, 0.32);
+    color: #FFC66D;
+}
+
+/* Preparação: Arena vs Biblioteca */
 .preparation-sections {
     display: grid;
     gap: 25px;
@@ -947,7 +953,7 @@ body {
     margin-bottom: 15px;
 }
 
-/* Arena (1Âª seÃ§Ã£o) */
+/* Arena (1ª seção) */
 .preparation-section:nth-of-type(1) {
     border-color: rgba(255, 107, 107, 0.35);
     background: linear-gradient(135deg, rgba(255, 107, 107, 0.10), rgba(16, 21, 35, 0.95));
@@ -957,7 +963,7 @@ body {
     color: #ff6b6b;
 }
 
-/* Biblioteca (2Âª seÃ§Ã£o) */
+/* Biblioteca (2ª seção) */
 .preparation-section:nth-of-type(2) {
     border-color: rgba(33, 150, 243, 0.35);
     background: linear-gradient(135deg, rgba(16, 242, 255, 0.10), rgba(16, 21, 35, 0.95));
@@ -1079,7 +1085,7 @@ body {
     border: 1px solid var(--card-border);
 }
 
-/* HistÃ³rico de treinos/estudos */
+/* Histórico de treinos/estudos */
 .history-card {
     background-color: var(--card-bg);
     padding: 15px;
@@ -1191,6 +1197,24 @@ body {
 
 .complete-btn:hover {
     background-color: #3d8b40;
+}
+
+.skip-btn {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.skip-btn:hover {
+    background-color: #e67e22;
 }
 
 /* Botões de conclusão de treino/estudo */
@@ -2399,6 +2423,12 @@ tr:hover {
     background: linear-gradient(to right, rgba(244, 67, 54, 0.1), transparent);
 }
 
+.mission-card.skipped,
+.history-card.skipped {
+    border-left: 4px solid #f39c12;
+    background: linear-gradient(to right, rgba(243, 156, 18, 0.12), transparent);
+}
+
 .failed-status {
     color: #f44336;
     font-weight: bold;
@@ -2412,6 +2442,15 @@ tr:hover {
     color: #4CAF50;
     font-weight: bold;
     background: rgba(76, 175, 80, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.skipped-status {
+    color: #f39c12;
+    font-weight: bold;
+    background: rgba(243, 156, 18, 0.12);
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 12px;
@@ -2515,3 +2554,563 @@ tr:hover {
 }
 
 
+
+/* Mobile UX refinements */
+@media (max-width: 768px) {
+    html, body {
+        overflow-x: hidden;
+    }
+
+    .container {
+        padding: 0 10px;
+    }
+
+    .header {
+        top: 0;
+        padding-top: calc(10px + env(safe-area-inset-top));
+        padding-bottom: 10px;
+    }
+
+    .header-content {
+        gap: 10px;
+    }
+
+    .app-title {
+        font-size: 1.2rem;
+        line-height: 1.2;
+    }
+
+    .header-stats {
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .stats-item {
+        min-height: 34px;
+        padding: 4px 8px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .main-nav {
+        padding-bottom: env(safe-area-inset-bottom);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .nav-list {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 4px;
+        padding: 6px 6px 10px;
+        overflow: visible;
+    }
+
+    .nav-item {
+        min-width: 0;
+        min-height: 54px;
+        padding: 6px 4px;
+        border-radius: 10px;
+        justify-content: center;
+    }
+
+    .nav-item i {
+        font-size: 1rem;
+        margin-bottom: 2px;
+    }
+
+    .nav-item span {
+        font-size: 0.72rem;
+        line-height: 1.1;
+        text-align: center;
+    }
+
+    .main-content {
+        padding: 12px 0 calc(98px + env(safe-area-inset-bottom));
+    }
+
+    .tab-content.active {
+        padding-bottom: 8px;
+    }
+
+    .profile-header,
+    .profile-tabs,
+    .shop-inventory,
+    .settings-section,
+    .form-container,
+    .table-container,
+    .calendar-container,
+    .finance-form,
+    .streaks-container,
+    .hero-logs-section {
+        padding: 14px;
+        margin-bottom: 14px;
+    }
+
+    .sub-nav {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 8px;
+        padding-bottom: 8px;
+    }
+
+    .sub-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sub-nav-btn {
+        min-height: 42px;
+        white-space: nowrap;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border-bottom-width: 2px;
+    }
+
+    .submit-btn,
+    .action-btn,
+    .buy-btn,
+    .use-btn,
+    .complete-btn,
+    .skip-btn,
+    .complete-workout-btn,
+    .complete-study-btn,
+    .finance-delete-btn,
+    .mobile-more-item,
+    .close-modal {
+        min-height: 44px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    .item-actions,
+    .mission-actions,
+    .workout-actions,
+    .study-actions {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .modal {
+        align-items: flex-end;
+        padding: 8px;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: none;
+        max-height: min(86vh, 680px);
+        border-radius: 14px 14px 10px 10px;
+        overflow: hidden;
+    }
+
+    .modal-body {
+        max-height: calc(86vh - 74px);
+        overflow-y: auto;
+        padding: 14px;
+    }
+
+    .mobile-more-menu {
+        left: 8px;
+        right: 8px;
+        bottom: calc(86px + env(safe-area-inset-bottom));
+    }
+}
+
+@media (max-width: 480px) {
+    .header-stats {
+        gap: 6px;
+    }
+
+    .stats-item {
+        font-size: 0.78rem;
+        padding: 3px 6px;
+    }
+
+    .nav-list {
+        gap: 2px;
+        padding: 6px 4px 8px;
+    }
+
+    .nav-item {
+        min-height: 50px;
+        padding: 4px 2px;
+    }
+
+    .nav-item span {
+        font-size: 0.66rem;
+    }
+
+    .hero-name {
+        font-size: 1.2rem;
+    }
+
+    .calendar-day {
+        min-height: 52px;
+        padding: 5px;
+    }
+}
+
+/* Mobile micro-details pass */
+@media (max-width: 768px) {
+    .profile-info {
+        width: 100%;
+        text-align: left;
+    }
+
+    .hero-name {
+        margin-bottom: 2px;
+        letter-spacing: 0.2px;
+    }
+
+    .hero-class {
+        font-size: 0.92rem;
+        margin-bottom: 10px;
+        opacity: 0.92;
+    }
+
+    .lives-integrated {
+        gap: 8px;
+        padding: 8px 10px;
+        flex-wrap: wrap;
+    }
+
+    .hearts-integrated {
+        gap: 4px;
+    }
+
+    .heart-integrated {
+        font-size: 1rem;
+    }
+
+    .lives-count {
+        margin-left: 0;
+    }
+
+    .level-xp-integrated {
+        margin-top: 10px;
+    }
+
+    .level-xp-header {
+        gap: 8px;
+        align-items: baseline;
+    }
+
+    .xp-text {
+        font-size: 0.82rem;
+    }
+
+    .section-header {
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .section-header h3 {
+        font-size: 1rem;
+        line-height: 1.25;
+    }
+
+    .items-list,
+    .missions-list,
+    .workouts-list,
+    .studies-list,
+    .records-container,
+    .finance-list,
+    .calendar-details-list {
+        max-height: 300px;
+        padding-right: 2px;
+        overscroll-behavior: contain;
+    }
+
+    .item-card,
+    .mission-card,
+    .workout-card,
+    .study-card,
+    .history-card,
+    .finance-item {
+        padding: 12px;
+    }
+
+    .item-info,
+    .mission-name,
+    .workout-name,
+    .study-name {
+        min-width: 0;
+    }
+
+    .item-name,
+    .mission-name span:last-child,
+    .workout-name span:last-child,
+    .study-name span:last-child {
+        font-size: 0.95rem;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    .item-level,
+    .mission-details,
+    .workout-details,
+    .study-details,
+    .finance-item-meta {
+        font-size: 0.82rem;
+        line-height: 1.35;
+    }
+
+    .mission-type,
+    .workout-type,
+    .study-type,
+    .display-type,
+    .attribute-tag {
+        font-size: 0.72rem;
+        padding: 2px 7px;
+    }
+
+    .workouts-grid,
+    .studies-grid,
+    .items-grid,
+    .inventory-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .workout-display-card,
+    .study-display-card {
+        padding: 14px;
+    }
+
+    .display-name {
+        font-size: 0.98rem;
+        gap: 8px;
+    }
+
+    .display-emoji {
+        font-size: 1.3rem;
+    }
+
+    .table-container {
+        padding: 10px;
+    }
+
+    table {
+        min-width: 640px;
+    }
+
+    th,
+    td {
+        padding: 10px 8px;
+        font-size: 0.84rem;
+        white-space: nowrap;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .calendar-day {
+        min-height: 54px;
+    }
+
+    .calendar-day-number {
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-info {
+        text-align: center;
+    }
+
+    .hero-class {
+        font-size: 0.86rem;
+    }
+
+    .section-header h3 {
+        font-size: 0.94rem;
+    }
+
+    .item-card,
+    .mission-card,
+    .workout-card,
+    .study-card,
+    .history-card,
+    .finance-item {
+        padding: 10px;
+    }
+
+    .item-name,
+    .mission-name span:last-child,
+    .workout-name span:last-child,
+    .study-name span:last-child {
+        font-size: 0.9rem;
+    }
+
+    .finance-item-actions {
+        gap: 8px;
+    }
+
+    .table-container {
+        padding: 8px;
+    }
+
+    th,
+    td {
+        font-size: 0.8rem;
+        padding: 9px 7px;
+    }
+}
+
+/* Visual polish pass */
+:root {
+    --surface-0: #0d1220;
+    --surface-1: #11182a;
+    --surface-2: #151f33;
+    --border-soft: rgba(255, 255, 255, 0.10);
+    --shadow-soft: 0 14px 30px rgba(0, 0, 0, 0.35);
+    --shadow-hover: 0 18px 34px rgba(0, 0, 0, 0.42);
+}
+
+body {
+    background-attachment: fixed;
+}
+
+.header,
+.main-nav {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.app-title {
+    letter-spacing: 0.3px;
+    text-shadow: 0 2px 14px rgba(16, 242, 255, 0.15);
+}
+
+.profile-header,
+.profile-tabs,
+.shop-inventory,
+.settings-section,
+.form-container,
+.table-container,
+.chart-box,
+.streaks-container,
+.hero-logs-section,
+.mission-card,
+.workout-card,
+.study-card,
+.item-card,
+.history-card,
+.workout-display-card,
+.study-display-card,
+.finance-card,
+.finance-form,
+.inventory-item,
+.shop-item {
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-soft);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+}
+
+.mission-card,
+.workout-card,
+.study-card,
+.item-card,
+.workout-display-card,
+.study-display-card,
+.stat-card,
+.record-item,
+.inventory-item,
+.shop-item,
+.finance-card {
+    transition: transform 0.2s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.mission-card:hover,
+.workout-card:hover,
+.study-card:hover,
+.item-card:hover,
+.workout-display-card:hover,
+.study-display-card:hover,
+.stat-card:hover,
+.record-item:hover,
+.inventory-item:hover,
+.shop-item:hover,
+.finance-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(16, 242, 255, 0.28);
+    box-shadow: var(--shadow-hover);
+}
+
+.section-header h3,
+.page-header h2 {
+    letter-spacing: 0.2px;
+}
+
+.section-header {
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.add-btn,
+.submit-btn,
+.complete-btn,
+.complete-workout-btn,
+.complete-study-btn,
+.skip-btn {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.28);
+    font-weight: 600;
+}
+
+.action-btn {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.nav-item:focus-visible {
+    outline: 2px solid rgba(16, 242, 255, 0.8);
+    outline-offset: 2px;
+}
+
+.empty-message {
+    border: 1px dashed rgba(140, 150, 166, 0.4);
+    border-radius: 10px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    color: #a9b5c8;
+}
+
+.mission-status,
+.history-status {
+    letter-spacing: 0.35px;
+}
+
+th {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+}
+
+::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0e1424;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(138, 92, 255, 0.7), rgba(16, 242, 255, 0.55));
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(138, 92, 255, 0.9), rgba(16, 242, 255, 0.75));
+}

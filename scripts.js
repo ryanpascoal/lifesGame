@@ -106,6 +106,7 @@ let calendarState = {
 };
 
 const REST_DAYS_PER_MONTH_LIMIT = 2;
+const SKIP_ACTIVITY_COST = 25;
 
 // Diário em IndexedDB (para evitar limite do localStorage)
 const DIARY_DB_NAME = 'heroJourneyDB';
@@ -481,7 +482,7 @@ function applyActivityPenalties(config) {
     } = config;
     
     const incompleteItems = dailyList.filter(item => 
-        item.date === targetDateStr && !item.completed);
+        item.date === targetDateStr && !item.completed && !item.skipped);
     
     if (incompleteItems.length === 0) {
         return;
@@ -727,6 +728,13 @@ function initEvents() {
     
     // Botões de conclusão de treinos do dia
     document.addEventListener('click', function(e) {
+        const skipWorkoutBtn = e.target.closest('.skip-workout-btn');
+        if (skipWorkoutBtn) {
+            const workoutDayId = parseInt(skipWorkoutBtn.getAttribute('data-id'));
+            skipDailyWorkout(workoutDayId);
+            return;
+        }
+
         const workoutBtn = e.target.closest('.complete-workout-btn');
         if (workoutBtn) {
             const workoutDayId = parseInt(workoutBtn.getAttribute('data-id'));
@@ -734,6 +742,13 @@ function initEvents() {
             return;
         }
         
+        const skipStudyBtn = e.target.closest('.skip-study-btn');
+        if (skipStudyBtn) {
+            const studyDayId = parseInt(skipStudyBtn.getAttribute('data-id'));
+            skipDailyStudy(studyDayId);
+            return;
+        }
+
         const studyBtn = e.target.closest('.complete-study-btn');
         if (studyBtn) {
             const studyDayId = parseInt(studyBtn.getAttribute('data-id'));
@@ -1671,6 +1686,128 @@ function failMission(missionId, reason = '') {
 }
 
 // Atualizar missões
+function trySpendSkipCoins(activityLabel) {
+    if (appData.hero.coins < SKIP_ACTIVITY_COST) {
+        alert(`Voce precisa de ${SKIP_ACTIVITY_COST} moedas para pular ${activityLabel}.`);
+        return false;
+    }
+    const confirmed = confirm(`Pular ${activityLabel} custa ${SKIP_ACTIVITY_COST} moedas. Deseja continuar?`);
+    if (!confirmed) return false;
+    appData.hero.coins -= SKIP_ACTIVITY_COST;
+    return true;
+}
+
+function skipMission(missionId) {
+    const missionIndex = appData.missions.findIndex(m => m.id === missionId);
+    if (missionIndex === -1) return;
+
+    const mission = appData.missions[missionIndex];
+    if (!trySpendSkipCoins(`a missao "${mission.name}"`)) return;
+
+    const todayStr = getLocalDateString();
+    appData.completedMissions.push({
+        ...mission,
+        completed: false,
+        failed: false,
+        skipped: true,
+        skippedDate: todayStr,
+        reason: `Atividade pulada (-${SKIP_ACTIVITY_COST} moedas)`
+    });
+    appData.missions.splice(missionIndex, 1);
+
+    if (mission.type === 'diaria') {
+        recreateDailyMissionForTomorrow(mission);
+    }
+
+    addHeroLog(
+        'mission',
+        `Missao pulada: ${mission.name}`,
+        `-${SKIP_ACTIVITY_COST} moedas. Sem penalidade.`
+    );
+
+    updateUI({ mode: 'activity' });
+    alert(`Missao "${mission.name}" pulada sem penalidade.`);
+}
+
+function skipDailyWorkout(workoutDayId) {
+    const workoutDay = appData.dailyWorkouts.find(dw => dw.id === workoutDayId);
+    if (!workoutDay || workoutDay.completed || workoutDay.skipped) return;
+
+    const workout = appData.workouts.find(w => w.id === workoutDay.workoutId);
+    if (!workout) return;
+    if (!trySpendSkipCoins(`o treino "${workout.name}"`)) return;
+
+    workoutDay.skipped = true;
+    workoutDay.skippedDate = getLocalDateString();
+
+    const workoutHistoryExists = appData.completedWorkouts.some(w =>
+        w.workoutId === workoutDay.workoutId && w.date === workoutDay.date
+    );
+    if (!workoutHistoryExists) {
+        appData.completedWorkouts.push({
+            id: Date.now() + workoutDay.id,
+            workoutId: workoutDay.workoutId,
+            name: workout.name,
+            emoji: workout.emoji,
+            type: workout.type,
+            date: workoutDay.date,
+            skipped: true,
+            skippedDate: workoutDay.skippedDate,
+            failed: false,
+            reason: `Atividade pulada (-${SKIP_ACTIVITY_COST} moedas)`
+        });
+    }
+
+    addHeroLog(
+        'workout',
+        `Treino pulado: ${workout.name}`,
+        `-${SKIP_ACTIVITY_COST} moedas. Sem penalidade.`
+    );
+
+    updateUI({ mode: 'activity' });
+    alert(`Treino "${workout.name}" pulado sem penalidade.`);
+}
+
+function skipDailyStudy(studyDayId) {
+    const studyDay = appData.dailyStudies.find(ds => ds.id === studyDayId);
+    if (!studyDay || studyDay.completed || studyDay.skipped) return;
+
+    const study = appData.studies.find(s => s.id === studyDay.studyId);
+    if (!study) return;
+    if (!trySpendSkipCoins(`o estudo "${study.name}"`)) return;
+
+    studyDay.skipped = true;
+    studyDay.skippedDate = getLocalDateString();
+
+    const studyHistoryExists = appData.completedStudies.some(s =>
+        s.studyId === studyDay.studyId && s.date === studyDay.date
+    );
+    if (!studyHistoryExists) {
+        appData.completedStudies.push({
+            id: Date.now() + studyDay.id,
+            studyId: studyDay.studyId,
+            name: study.name,
+            emoji: study.emoji,
+            type: study.type,
+            date: studyDay.date,
+            skipped: true,
+            skippedDate: studyDay.skippedDate,
+            failed: false,
+            applied: !!studyDay.applied,
+            reason: `Atividade pulada (-${SKIP_ACTIVITY_COST} moedas)`
+        });
+    }
+
+    addHeroLog(
+        'study',
+        `Estudo pulado: ${study.name}`,
+        `-${SKIP_ACTIVITY_COST} moedas. Sem penalidade.`
+    );
+
+    updateUI({ mode: 'activity' });
+    alert(`Estudo "${study.name}" pulado sem penalidade.`);
+}
+
 function updateMissions() {
     updateDailyMissions();
     updateCompletedMissions();
@@ -1766,6 +1903,9 @@ function updateDailyMissions() {
                 <button class="complete-btn" data-id="${mission.id}">
                     <i class="fas fa-check"></i> Concluir
                 </button>
+                <button class="skip-btn skip-mission-btn" data-id="${mission.id}">
+                    <i class="fas fa-forward"></i> Pular (-${SKIP_ACTIVITY_COST})
+                </button>
             </div>
         `;
         
@@ -1777,6 +1917,12 @@ function updateDailyMissions() {
         btn.addEventListener('click', function() {
             const id = parseInt(this.getAttribute('data-id'));
             showMissionCompletionModal(id);
+        });
+    });
+    container.querySelectorAll('.skip-mission-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = parseInt(this.getAttribute('data-id'));
+            skipMission(id);
         });
     });
 }
@@ -1797,13 +1943,16 @@ function updateCompletedMissions() {
     
     recentMissions.forEach(mission => {
         const missionCard = document.createElement('div');
-        missionCard.className = `mission-card ${mission.failed ? 'failed' : 'completed'}`;
+        missionCard.className = `mission-card ${mission.failed ? 'failed' : mission.skipped ? 'skipped' : 'completed'}`;
         
-        const statusText = mission.failed ? 'FALHOU' : 'CONCLUÍDA';
-        const statusClass = mission.failed ? 'failed-status' : 'completed-status';
+        const statusText = mission.failed ? 'FALHOU' : mission.skipped ? 'PULADA' : 'CONCLUIDA';
+        const statusClass = mission.failed ? 'failed-status' : mission.skipped ? 'skipped-status' : 'completed-status';
         const rewardText = mission.failed ? 'Penalidade: -1 vida' : 
+                         mission.skipped ? `Custo: -${SKIP_ACTIVITY_COST} moedas` :
                          mission.type === 'epica' ? 'Recompensa: 20 XP + 10 moedas' : 
                          'Recompensa: 1 XP + 1 moeda';
+        const eventDateLabel = mission.failed ? 'Falhou em' : mission.skipped ? 'Pulada em' : 'Concluida em';
+        const eventDateValue = mission.completedDate || mission.failedDate || mission.skippedDate;
         const className = mission.classId ? getClassNameById(mission.classId) : '';
         const classLine = className ? `<p>Classe: ${className}</p>` : '';
         
@@ -1817,7 +1966,7 @@ function updateCompletedMissions() {
                 <span class="mission-type ${mission.type}">${getMissionTypeName(mission.type)}</span>
             </div>
             <div class="mission-details">
-                <p>${mission.failed ? 'Falhou em' : 'Concluída em'}: ${formatDate(mission.completedDate || mission.failedDate)}</p>
+                <p>${eventDateLabel}: ${formatDate(eventDateValue)}</p>
                 <p>${rewardText}</p>
                 ${classLine}
                 ${mission.reason ? `<p class="mission-reason">Motivo: ${mission.reason}</p>` : ''}
@@ -1834,6 +1983,7 @@ function updateCompletedMissions() {
 function checkOverdueMissions() {
     const today = new Date();
     const todayStr = getLocalDateString();
+    const overdueToFail = [];
     
     // Verificar missões que já deveriam ter sido feitas
     appData.missions.forEach(mission => {
@@ -1845,7 +1995,7 @@ function checkOverdueMissions() {
             // Se a data da missão é anterior a hoje e não foi concluída
             if (missionDateStr < todayStr && !mission.completed && !mission.failed) {
                 // Missão eventual atrasada - falhar automaticamente
-                failMission(mission.id, 'Data da missão já passou');
+                overdueToFail.push({ id: mission.id, reason: 'Data da missão já passou' });
             }
         }
         
@@ -1856,11 +2006,12 @@ function checkOverdueMissions() {
             
             if (deadlineStr < todayStr && !mission.failed && !mission.completed) {
                 // Missão épica atrasada - falhar automaticamente
-                failMission(mission.id, 'Prazo expirado');
+                overdueToFail.push({ id: mission.id, reason: 'Prazo expirado' });
             }
         }
     });
     
+    overdueToFail.forEach(item => failMission(item.id, item.reason));
     // Para missões diárias: remover as concluídas do dia anterior e recriar para hoje
     recreateDailyMissionsForToday();
 }
@@ -2484,7 +2635,7 @@ function updateDailyWorkouts() {
     container.innerHTML = '';
     
     const today = getLocalDateString();
-    const dailyWorkouts = appData.dailyWorkouts.filter(dw => dw.date === today && !dw.completed);
+    const dailyWorkouts = appData.dailyWorkouts.filter(dw => dw.date === today && !dw.completed && !dw.skipped);
     
     if (dailyWorkouts.length === 0) {
         container.innerHTML = '<p class="empty-message">Nenhum treino para hoje. Aproveite o descanso!</p>';
@@ -2545,6 +2696,9 @@ function updateDailyWorkouts() {
                 <button class="complete-workout-btn" data-id="${workoutDay.id}">
                     <i class="fas fa-check"></i> Concluir Treino
                 </button>
+                <button class="skip-btn skip-workout-btn" data-id="${workoutDay.id}">
+                    <i class="fas fa-forward"></i> Pular (-${SKIP_ACTIVITY_COST})
+                </button>
             </div>
         `;
         
@@ -2560,7 +2714,7 @@ function updateDailyStudies() {
     container.innerHTML = '';
     
     const today = getLocalDateString();
-    const dailyStudies = appData.dailyStudies.filter(ds => ds.date === today && !ds.completed);
+    const dailyStudies = appData.dailyStudies.filter(ds => ds.date === today && !ds.completed && !ds.skipped);
     
     if (dailyStudies.length === 0) {
         container.innerHTML = '<p class="empty-message">Nenhum estudo para hoje.</p>';
@@ -2592,6 +2746,9 @@ function updateDailyStudies() {
             <div class="study-actions">
                 <button class="complete-study-btn" data-id="${studyDay.id}">
                     <i class="fas fa-check"></i> Concluir Estudo
+                </button>
+                <button class="skip-btn skip-study-btn" data-id="${studyDay.id}">
+                    <i class="fas fa-forward"></i> Pular (-${SKIP_ACTIVITY_COST})
                 </button>
             </div>
         `;
@@ -2792,8 +2949,8 @@ function setCalendarSelection(cell) {
         const row = document.createElement('div');
         row.className = 'calendar-details-item';
         
-        const statusTag = item.status === 'failed' ? 'Falhou' : item.status === 'done' ? 'Concluída' : 'Pendente';
-        const statusClass = item.status === 'failed' ? 'failed' : item.status === 'done' ? 'done' : '';
+        const statusTag = item.status === 'failed' ? 'Falhou' : item.status === 'skipped' ? 'Pulada' : item.status === 'done' ? 'Concluida' : 'Pendente';
+        const statusClass = item.status === 'failed' ? 'failed' : item.status === 'skipped' ? 'skipped' : item.status === 'done' ? 'done' : '';
         
         row.innerHTML = `
             <div class="calendar-details-title">
@@ -2844,7 +3001,10 @@ function getCalendarItemsForDate(dateStr) {
         if (!typeInfo) return;
         
         if (mission.type === 'diaria') {
-            items.push({ ...typeInfo, ...mission, status: 'pending' });
+            const availableFrom = mission.availableDate || mission.dateAdded || null;
+            if (!availableFrom || availableFrom <= dateStr) {
+                items.push({ ...typeInfo, ...mission, status: 'pending' });
+            }
         }
         
         if (mission.type === 'semanal' && mission.days && mission.days.includes(dayOfWeek)) {
@@ -2870,12 +3030,12 @@ function getCalendarItemsForDate(dateStr) {
     appData.completedMissions.forEach(mission => {
         const typeInfo = getMissionTypeInfo(mission.type);
         if (!typeInfo) return;
-        const completedDate = mission.completedDate || mission.failedDate;
+        const completedDate = mission.completedDate || mission.failedDate || mission.skippedDate;
         if (completedDate === dateStr) {
             items.push({
                 ...typeInfo,
                 ...mission,
-                status: mission.failed ? 'failed' : 'done'
+                status: mission.failed ? 'failed' : mission.skipped ? 'skipped' : 'done'
             });
         }
     });
@@ -2914,13 +3074,13 @@ function getCalendarItemsForDate(dateStr) {
     
     // Treinos concluídos/falhados
     appData.completedWorkouts.forEach(entry => {
-        if (entry.date === dateStr || entry.completedDate === dateStr || entry.failedDate === dateStr) {
+        if (entry.date === dateStr || entry.completedDate === dateStr || entry.failedDate === dateStr || entry.skippedDate === dateStr) {
             items.push({
                 kindLabel: 'Treino',
                 kindClass: 'workout',
                 typeLabel: getWorkoutTypeName(entry.type),
                 typeClass: 'workout',
-                status: entry.failed ? 'failed' : 'done',
+                status: entry.failed ? 'failed' : entry.skipped ? 'skipped' : 'done',
                 id: `workout-${entry.workoutId}-${entry.date}`,
                 name: entry.name,
                 emoji: entry.emoji
@@ -2930,13 +3090,13 @@ function getCalendarItemsForDate(dateStr) {
     
     // Estudos concluídos/falhados
     appData.completedStudies.forEach(entry => {
-        if (entry.date === dateStr || entry.completedDate === dateStr || entry.failedDate === dateStr) {
+        if (entry.date === dateStr || entry.completedDate === dateStr || entry.failedDate === dateStr || entry.skippedDate === dateStr) {
             items.push({
                 kindLabel: 'Estudo',
                 kindClass: 'study',
                 typeLabel: entry.type === 'logico' ? 'Lógico' : 'Criativo',
                 typeClass: 'study',
-                status: entry.failed ? 'failed' : 'done',
+                status: entry.failed ? 'failed' : entry.skipped ? 'skipped' : 'done',
                 id: `study-${entry.studyId}-${entry.date}`,
                 name: entry.name,
                 emoji: entry.emoji
@@ -3084,7 +3244,7 @@ function updateWorkoutHistory() {
     const prevDistancesByEntryId = new Map();
     const lastDistancesByWorkoutId = new Map();
     allEntries.forEach(entry => {
-        if (entry.failed) return;
+        if (entry.failed || entry.skipped) return;
         if (entry.type === 'repeticao' && Array.isArray(entry.series)) {
             const totalReps = entry.series.reduce((sum, val) => sum + (parseInt(val) || 0), 0);
             const prevTotal = lastTotalsByWorkoutId.get(entry.workoutId);
@@ -3106,17 +3266,19 @@ function updateWorkoutHistory() {
     });
     recent.forEach(entry => {
         const card = document.createElement('div');
-        card.className = `history-card ${entry.failed ? 'failed' : ''}`.trim();
+        card.className = `history-card ${entry.failed ? 'failed' : entry.skipped ? 'skipped' : ''}`.trim();
         
         const details = [];
         if (entry.failed) {
             details.push(`<p>Falhou em: ${formatDate(entry.failedDate || entry.date)}</p>`);
+        } else if (entry.skipped) {
+            details.push(`<p>Pulado em: ${formatDate(entry.skippedDate || entry.date)}</p>`);
         } else {
-            details.push(`<p>Concluído em: ${formatDate(entry.completedDate || entry.date)}</p>`);
+            details.push(`<p>Concluido em: ${formatDate(entry.completedDate || entry.date)}</p>`);
         }
         details.push(`<p>Tipo: ${getWorkoutTypeName(entry.type)}</p>`);
         
-        if (!entry.failed && entry.type === 'repeticao' && Array.isArray(entry.series)) {
+        if (!entry.failed && !entry.skipped && entry.type === 'repeticao' && Array.isArray(entry.series)) {
             const totalReps = entry.series.reduce((sum, val) => sum + (parseInt(val) || 0), 0);
             const prevTotal = prevTotalsByEntryId.get(entry.id);
             let trend = '';
@@ -3126,7 +3288,7 @@ function updateWorkoutHistory() {
             }
             details.push(`<p>Séries: ${entry.series.map(v => v || 0).join(' / ')} (Total: ${totalReps})${trend}</p>`);
         }
-        if (!entry.failed && entry.type === 'distancia' && entry.distance !== null && entry.distance !== undefined) {
+        if (!entry.failed && !entry.skipped && entry.type === 'distancia' && entry.distance !== null && entry.distance !== undefined) {
             const distance = Number(entry.distance);
             let trend = '';
             const prevDistance = prevDistancesByEntryId.get(entry.id);
@@ -3136,7 +3298,7 @@ function updateWorkoutHistory() {
             }
             details.push(`<p>Distância: ${entry.distance} km${trend}</p>`);
         }
-        if (!entry.failed && (entry.type === 'maior-tempo' || entry.type === 'menor-tempo') && entry.time !== null && entry.time !== undefined) {
+        if (!entry.failed && !entry.skipped && (entry.type === 'maior-tempo' || entry.type === 'menor-tempo') && entry.time !== null && entry.time !== undefined) {
             details.push(`<p>Tempo: ${entry.time} min</p>`);
         }
         if (entry.reason) {
@@ -3152,8 +3314,8 @@ function updateWorkoutHistory() {
                     <span class="history-emoji">${entry.emoji || '💪'}</span>
                     <span>${entry.name}</span>
                 </div>
-                <span class="history-status ${entry.failed ? 'failed-status' : 'completed-status'}">
-                    ${entry.failed ? 'FALHOU' : 'CONCLUÍDO'}
+                <span class="history-status ${entry.failed ? 'failed-status' : entry.skipped ? 'skipped-status' : 'completed-status'}">
+                    ${entry.failed ? 'FALHOU' : entry.skipped ? 'PULADO' : 'CONCLUIDO'}
                 </span>
             </div>
             <div class="history-details">
@@ -3181,16 +3343,18 @@ function updateStudyHistory() {
     const recent = allEntries.slice(-30).reverse();
     recent.forEach(entry => {
         const card = document.createElement('div');
-        card.className = `history-card ${entry.failed ? 'failed' : ''}`.trim();
+        card.className = `history-card ${entry.failed ? 'failed' : entry.skipped ? 'skipped' : ''}`.trim();
         
         const details = [];
         if (entry.failed) {
             details.push(`<p>Falhou em: ${formatDate(entry.failedDate || entry.date)}</p>`);
+        } else if (entry.skipped) {
+            details.push(`<p>Pulado em: ${formatDate(entry.skippedDate || entry.date)}</p>`);
         } else {
-            details.push(`<p>Concluído em: ${formatDate(entry.completedDate || entry.date)}</p>`);
+            details.push(`<p>Concluido em: ${formatDate(entry.completedDate || entry.date)}</p>`);
         }
         details.push(`<p>Tipo: ${entry.type === 'logico' ? 'Lógico' : 'Criativo'}</p>`);
-        if (!entry.failed) {
+        if (!entry.failed && !entry.skipped) {
             details.push(`<p>Aplicado: ${entry.applied ? 'Sim' : 'Não'}</p>`);
         }
         if (entry.reason) {
@@ -3206,8 +3370,8 @@ function updateStudyHistory() {
                     <span class="history-emoji">${entry.emoji || '📚'}</span>
                     <span>${entry.name}</span>
                 </div>
-                <span class="history-status ${entry.failed ? 'failed-status' : 'completed-status'}">
-                    ${entry.failed ? 'FALHOU' : 'CONCLUÍDO'}
+                <span class="history-status ${entry.failed ? 'failed-status' : entry.skipped ? 'skipped-status' : 'completed-status'}">
+                    ${entry.failed ? 'FALHOU' : entry.skipped ? 'PULADO' : 'CONCLUIDO'}
                 </span>
             </div>
             <div class="history-details">
@@ -3532,7 +3696,7 @@ function showStudyCompletionModal(studyDayId) {
     modal.classList.add('active');
 }
 
-// Mostrar modal para conclusÃ£o de missÃ£o
+// Mostrar modal para conclusão de missão
 function showMissionCompletionModal(missionId) {
     const modal = document.getElementById('item-modal');
     const modalTitle = document.getElementById('modal-title');
@@ -3607,7 +3771,7 @@ function showGameOverModal() {
     modalTitle.textContent = 'Game Over';
     form.innerHTML = `
         <div class="form-group">
-            <p>Suas vidas chegaram a 0. Ao restaurar, 1 vida volta e todo o XP Ã© zerado (nÃ­veis mantidos).</p>
+            <p>Suas vidas chegaram a 0. Ao restaurar, 1 vida volta e todo o XP é zerado (níveis mantidos).</p>
         </div>
         <button type="button" id="gameover-restore-btn" class="submit-btn">Restaurar 1 vida</button>
     `;
@@ -3633,7 +3797,7 @@ function handleGameOverIfNeeded() {
         if (!modal || modal.dataset.gameOverShown === 'true') return;
         if (!appData.statistics) appData.statistics = {};
         appData.statistics.deaths = (appData.statistics.deaths || 0) + 1;
-        addHeroLog('system', 'Game Over', 'Vidas chegaram a 0. Modal de restauraÃ§Ã£o exibido e XP serÃ¡ zerado ao confirmar.');
+        addHeroLog('system', 'Game Over', 'Vidas chegaram a 0. Modal de restauração exibido e XP será zerado ao confirmar.');
         showGameOverModal();
     }
 }
@@ -3903,7 +4067,7 @@ function handleStudyCompletion() {
     completeStudy(studyDayId, feedback);
 }
 
-// Manipular conclusÃ£o de missÃ£o via modal
+// Manipular conclusão de missão via modal
 function handleMissionCompletion() {
     const missionId = parseInt(document.getElementById('mission-id').value);
     const feedback = document.getElementById('mission-feedback')?.value || '';
@@ -4637,7 +4801,7 @@ function addClassXP(classId, amount) {
     const cls = appData.classes.find(c => c.id === classId);
     if (!cls) return;
     
-    // Aplicar bÃ´nus de chefÃµes derrotados
+    // Aplicar bônus de chefes derrotados
     const bonusMultiplier = 1 + (appData.bosses.filter(b => b.bonusActive).length * 0.01);
     const finalAmount = Math.floor(amount * bonusMultiplier);
     
@@ -4647,7 +4811,7 @@ function addClassXP(classId, amount) {
     const newLevel = Math.floor(cls.xp / 100);
     
     if (newLevel > oldLevel) {
-        console.log(`Classe ${cls.name} alcanÃ§ou o nÃ­vel ${newLevel}!`);
+        console.log(`Classe ${cls.name} alcançou o nível ${newLevel}!`);
     }
     
     cls.maxXp = (newLevel + 1) * 100;
@@ -5366,7 +5530,7 @@ function deleteClass(id) {
     }
     
     updateUI({ mode: 'activity' });
-    alert('Classe excluÃ­da com sucesso!');
+    alert('Classe excluída com sucesso!');
 }
 
 function applyPenalties(dateStr = getLocalDateString()) {
